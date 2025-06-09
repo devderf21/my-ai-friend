@@ -14,24 +14,48 @@
 <script>
 export default {
   name: 'App',
+  data() {
+    return {
+      loggedIn: !!localStorage.getItem('sessionToken'),
+    };
+  },
   computed: {
     isLoggedIn() {
-      // Re-evaluate based on current localStorage status
-      return !!localStorage.getItem('sessionToken');
+      return this.loggedIn;
     }
   },
   methods: {
+    updateLoginStatus() {
+      this.loggedIn = !!localStorage.getItem('sessionToken');
+    },
     logout() {
       localStorage.removeItem('sessionToken');
+      localStorage.removeItem('loggedInUser');
+      this.loggedIn = false; // Update local reactive state
       this.$router.push('/login');
     }
   },
   watch: {
     '$route'() {
-      // Force re-render on route change to update isLoggedIn
-      this.$forceUpdate();
+      // Update login status on route change, especially for initial load or browser back/forward
+      this.updateLoginStatus();
     }
-  }
+  },
+  created() {
+    // Ensure status is up-to-date when app is created
+    this.updateLoginStatus();
+
+    // Listen for login/logout events if we were to implement an event bus
+    // For now, router push from Login/Signup will trigger route watch
+  },
+  mounted() {
+    // Another check or listener setup can go here if needed
+    // e.g., window.addEventListener('storage', this.handleStorageChange);
+    // This would react to localStorage changes from other tabs, though more complex.
+  },
+  // beforeUnmount() {
+    // window.removeEventListener('storage', this.handleStorageChange);
+  // }
 }
 </script>
 
